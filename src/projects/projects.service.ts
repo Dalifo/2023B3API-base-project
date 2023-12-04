@@ -2,9 +2,10 @@ import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/co
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './entities/project.entity';
-import { DeepPartial, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
+import { ProjectUser } from '../project-users/entities/project-user.entity';
 
 @Injectable()
 export class ProjectsService {
@@ -13,6 +14,8 @@ export class ProjectsService {
     private projectsRepository: Repository<Project>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(ProjectUser)
+    private projectUserRepository: Repository<ProjectUser>,
   ) {}
 
   async createProject(createProjectDto: CreateProjectDto, authenticatedUser?: User) {
@@ -49,13 +52,49 @@ export class ProjectsService {
     return project;
   }
   
-
-  async findAll(authenticatedUser?: User) {
+  async findAll(authenticatedUser?: User): Promise<Project[]> {
     if (!authenticatedUser) {
       throw new UnauthorizedException('Unauthorized');
     }
-    return `This action returns all projects`;
+  
+    let projects: Project[];
+  
+    if (authenticatedUser.role === 'Admin' || authenticatedUser.role === 'ProjectManager') {
+      projects = await this.projectsRepository.find({
+        relations: ['referringEmployee'],
+      });
+    } else {
+      projects = await this.findProjectsForUser(authenticatedUser.id);
+    }
+  
+    // Appliquer la transformation
+    projects = projects.map((project) => this.transformProject(project));
+  
+    console.log(projects);
+    return projects;
   }
+  
+  private async findProjectsForUser(userId: string): Promise<Project[]> {
+    const projectUsers = await this.projectUserRepository.find({
+      where: { userId },
+      relations: ['project', 'project.referringEmployee'],
+    });
+  
+    return projectUsers.map((projectUser) => projectUser.project);
+  }
+  
+  private transformProject(project: Project): Project {
+    const { referringEmployee, ...projectWithoutReferringEmployee } = project;
+    return {
+      ...projectWithoutReferringEmployee,
+      referringEmployee: {
+        id: referringEmployee.id,
+        username: referringEmployee.username,
+        email: referringEmployee.email,
+        role: referringEmployee.role,
+      },
+    };
+  }  
 
   async findOne(id: number, authenticatedUser?: User) {
     if (!authenticatedUser) {

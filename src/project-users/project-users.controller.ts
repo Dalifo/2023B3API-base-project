@@ -1,26 +1,30 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { ProjectUsersService } from './project-users.service';
 import { CreateProjectUserDto } from './dto/create-project-user.dto';
 import { UpdateProjectUserDto } from './dto/update-project-user.dto';
+import { AuthGuard } from '../users/jwt-auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('project-users')
+@UseGuards(AuthGuard)
 export class ProjectUsersController {
   constructor(private readonly projectUsersService: ProjectUsersService) {}
 
+  @ApiBearerAuth()
   @Post()
-  create(@Body() createProjectUserDto: CreateProjectUserDto) {
-    return this.projectUsersService.create(createProjectUserDto);
+  create(@Body() createProjectUserDto: CreateProjectUserDto, @Req() req: any) {
+    return this.projectUsersService.create(createProjectUserDto, req.user);
   }
 
   @Get()
-  findAll() {
-    return this.projectUsersService.findAll();
+  findAll(@Req() req: any) {
+    return this.projectUsersService.findAll(req.user);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.projectUsersService.findOne(+id);
-  }
+  findOne(@Param('id') id: string, @Req() req: any) {
+    return this.projectUsersService.findOne(id, req.user);
+  }  
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProjectUserDto: UpdateProjectUserDto) {

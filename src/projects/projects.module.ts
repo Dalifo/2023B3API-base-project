@@ -7,6 +7,7 @@ import { ProjectsController } from './projects.controller';
 import { AuthGuard } from '../users/jwt-auth.guard'; 
 import { User } from '../users/entities/user.entity';
 import { UsersModule } from '../users/users.module';
+import { ProjectUser } from '../project-users/entities/project-user.entity';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { UsersModule } from '../users/users.module';
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '1h' },
     }),
-    TypeOrmModule.forFeature([Project, User]), 
+    TypeOrmModule.forFeature([Project, User, ProjectUser]), 
     UsersModule, 
 
   ],

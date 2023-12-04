@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from "typeorm";
+import { Project } from "../../projects/entities/project.entity";
+import { User } from "../../users/entities/user.entity";
 
 @Entity()
 export class ProjectUser {
@@ -6,15 +8,22 @@ export class ProjectUser {
     public id!: string;
 
     @Column()
-    startDate!: Date;
+    public startDate!: Date;
 
     @Column()
-    endDate!: Date;
-    
+    public endDate!: Date;
 
-    projectId!: string; //au format uuidv4
+    @Column()
+    public projectId!: string;
 
-    userId!: string; //au format uuidv4
-    
+    @ManyToOne(() => Project, (project) => project.projectUsers, { eager: true })
+    @JoinColumn({ name: 'projectId' })
+    public project!: Project;
+
+    @Column()
+    public userId!: string;
+
+    @ManyToOne(() => User, (user) => user.projectUsers, { eager: true })
+    @JoinColumn({ name: 'userId' })
+    public user!: User;
 }
-

@@ -1,18 +1,16 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { IsUUID, IsDateString } from 'class-validator';
 
 export class CreateProjectUserDto {
-    @PrimaryGeneratedColumn('uuid')
-    public id!: string;
+    @IsDateString()
+    public startDate!: Date;
 
-    @Column()
-    startDate!: Date;
+    @IsDateString()
+    public endDate!: Date;
 
-    @Column()
-    endDate!: Date;
-    
+    @IsUUID('4')
+    public projectId!: string;
 
-    projectId!: string; //au format uuidv4
-
-    userId!: string; //au format uuidv4
-
+    @IsUUID('4')
+    public userId!: string;
 }
+

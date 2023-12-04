@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Project } from '../../projects/entities/project.entity';
+import { ProjectUser } from '../../project-users/entities/project-user.entity';
 
 @Entity()
 export class User {
@@ -24,4 +25,7 @@ export class User {
 
   @OneToMany(() => Project, (project) => project.referringEmployee)
   public projects?: Project[];
+
+  @OneToMany(() => ProjectUser, (projectUser) => projectUser.project)
+  public projectUsers?: ProjectUser[];
 }
