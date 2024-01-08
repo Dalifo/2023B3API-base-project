@@ -4,6 +4,11 @@ import { CreateProjectUserDto } from './dto/create-project-user.dto';
 import { UpdateProjectUserDto } from './dto/update-project-user.dto';
 import { AuthGuard } from '../users/jwt-auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { User } from '../users/entities/user.entity';
+
+type RequestWithUser = {
+  user: User;
+};
 
 @Controller('project-users')
 @UseGuards(AuthGuard)
@@ -12,17 +17,17 @@ export class ProjectUsersController {
 
   @ApiBearerAuth()
   @Post()
-  create(@Body() createProjectUserDto: CreateProjectUserDto, @Req() req: any) {
+  create(@Body() createProjectUserDto: CreateProjectUserDto, @Req() req: RequestWithUser) {
     return this.projectUsersService.create(createProjectUserDto, req.user);
   }
 
   @Get()
-  findAll(@Req() req: any) {
+  findAll(@Req() req: RequestWithUser) {
     return this.projectUsersService.findAll(req.user);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @Req() req: any) {
+  findOne(@Param('id') id: string, @Req() req: RequestWithUser) {
     return this.projectUsersService.findOne(id, req.user);
   }  
 

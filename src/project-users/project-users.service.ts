@@ -81,7 +81,7 @@ export class ProjectUsersService {
     return projectUser;
   }
 
-  async findAll(authenticatedUser?: User): Promise<{ id: string, name: string, referringEmployeeId: string }[]> {
+  async findAll(authenticatedUser?: User): Promise<{ id: string, startDate: string, endDate: string, userId: string, projectId: string }[]> {
     let projectUsers: ProjectUser[];
   
     if (!authenticatedUser) {
@@ -99,10 +99,12 @@ export class ProjectUsersService {
       });
     }
   
-    const result = projectUsers.map(({ id, project }) => ({
+    const result = projectUsers.map(({  id, startDate, endDate, userId, project }) => ({
       id,
-      name: project.name,
-      referringEmployeeId: project.referringEmployeeId,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      userId,
+      projectId: project.id,
     }));
   
     return result;

@@ -10,6 +10,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { Project } from './projects/entities/project.entity';
 import { ProjectUsersModule } from './project-users/project-users.module';
 import { ProjectUser } from './project-users/entities/project-user.entity';
+import { EventModule } from './event/events.module';
+import { Event } from './event/entities/event.entity';
 
 @Module({
   imports: [
@@ -27,7 +29,7 @@ import { ProjectUser } from './project-users/entities/project-user.entity';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [User, Project, ProjectUser],
+        entities: [User, Project, ProjectUser, Event],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -35,6 +37,7 @@ import { ProjectUser } from './project-users/entities/project-user.entity';
     UsersModule,
     ProjectsModule,
     ProjectUsersModule,
+    EventModule,
   ],
   controllers: [ProjectsController],
   providers: [ProjectsService],

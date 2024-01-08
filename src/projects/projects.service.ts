@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './entities/project.entity';
@@ -67,10 +67,8 @@ export class ProjectsService {
       projects = await this.findProjectsForUser(authenticatedUser.id);
     }
   
-    // Appliquer la transformation
     projects = projects.map((project) => this.transformProject(project));
   
-    console.log(projects);
     return projects;
   }
   
@@ -96,13 +94,38 @@ export class ProjectsService {
     };
   }  
 
-  async findOne(id: number, authenticatedUser?: User) {
-    if (!authenticatedUser) {
-      throw new UnauthorizedException('Unauthorized');
-    }
-    return `This action returns a #${id} project`;
+
+async findOne(id: string, authenticatedUser?: User) {
+  if (!authenticatedUser) {
+    throw new UnauthorizedException('Unauthorized');
   }
 
+  try {
+    const project = await this.projectsRepository.findOneOrFail({
+      where: { id: id },
+      relations: ['projectUsers'],
+    });
+
+    if (authenticatedUser.role === 'Employee') {
+      const isUserInProject = project.projectUsers.some(
+        (projectUser) => projectUser.userId === authenticatedUser.id
+      );
+
+      if (!isUserInProject) {
+        throw new ForbiddenException('Forbidden');
+      }
+    }
+
+    return project;
+  } catch (error) {
+    if (error instanceof ForbiddenException) {
+      throw error;
+    }
+    throw new NotFoundException('Project not found');
+  }
+}
+
+  
   update(id: number, updateProjectDto: UpdateProjectDto) {
     return `This action updates a #${id} project`;
   }

@@ -2,17 +2,22 @@ import { Injectable, HttpException, HttpStatus, UnauthorizedException, NotFoundE
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { UserDto } from './dto/user.dto';
+import * as dayjs from 'dayjs'
+import 'dayjs/locale/fr';  // Assurez-vous d'importer le module de localisation français si nécessaire
+import { Event } from '../event/entities/event.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Event)
+    private eventsRepository: Repository<Event>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -98,11 +103,49 @@ export class UsersService {
 
     const { password, projects, ...userWithoutPassword } = user;
     return userWithoutPassword as UserDto;
-}
+  }
 
+  async getUserMealVouchers(userId: string, month: number): Promise<number> {
+    dayjs.locale('fr');
+      
+    const startDate = dayjs().set('month', month - 1).startOf('month');
+    const endDate = startDate.endOf('month');    
   
+    const workDays = [];
+    let currentDay = startDate;
   
+    while (currentDay.isBefore(endDate) || currentDay.isSame(endDate)) {
+      if (currentDay.day() !== 0 && currentDay.day() !== 6) { 
+        
+        const isItOff = await this.isDayOff(currentDay, userId)
+        
+        if (!isItOff) {          
+          workDays.push(currentDay);
+        }
+      }
+      currentDay = currentDay.add(1, 'day');      
+    }
+    const mealVoucherAmount = workDays.length * 8;  
+    return mealVoucherAmount;
+  }
+  
+  private async isDayOff(day: dayjs.Dayjs, userId: string): Promise<boolean> {  
+      const userWithEvents = await this.usersRepository.findOne({
+        where: { id: userId },
+        relations: ['events'],
+      });
 
+      if (!userWithEvents || !userWithEvents.events) {
+        return false;
+      }
+      
+      const isDayOff = userWithEvents.events.some((event) =>
+        day.isSame(event.date, 'day')
+      );
+  
+      return isDayOff;
+  }
+  
   update(id: number, updateUserDto: UpdateUserDto) {
     return `This action updates a #${id} user`;
   }

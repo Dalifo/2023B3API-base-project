@@ -23,7 +23,7 @@ export class Project {
 
   @ManyToOne(() => User, (user) => user.projects, { eager: true })
   @JoinColumn({ name: 'referringEmployeeId' })
-  public referringEmployee!: UserDto; // Utilisez le type UserDto au lieu de User
+  public referringEmployee!: UserDto;
 
   @OneToMany(() => ProjectUser, (projectUser) => projectUser.project)
   projectUsers?: ProjectUser[];

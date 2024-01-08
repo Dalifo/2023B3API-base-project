@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe, UnauthorizedException, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe, UnauthorizedException, UseGuards, Req, ParseUUIDPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
@@ -65,6 +65,14 @@ export class UsersController {
   async findOne(@Param('id') id: string): Promise<UserDto> {
     const userDto = await this.usersService.findOne(id);
     return userDto;
+  }
+
+  @Get(':id/meal-vouchers/:month')
+  getUserMealVouchers(
+    @Param('id', new ParseUUIDPipe()) userId: string,
+    @Param('month') month: number,
+  ) {
+    return this.usersService.getUserMealVouchers(userId, month);
   }
 
   @Patch(':id')

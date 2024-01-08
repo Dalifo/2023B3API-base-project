@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
+import { Event } from '../event/entities/event.entity';
 
 @Module({
   imports: [
@@ -11,7 +12,7 @@ import { User } from './entities/user.entity';
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '1h' },
     }),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Event]),
   ],
   controllers: [UsersController],
   providers: [UsersService],
