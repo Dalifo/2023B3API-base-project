@@ -8,16 +8,12 @@ import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { UserDto } from './dto/user.dto';
 import * as dayjs from 'dayjs'
-import 'dayjs/locale/fr';  // Assurez-vous d'importer le module de localisation français si nécessaire
-import { Event } from '../event/entities/event.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-    @InjectRepository(Event)
-    private eventsRepository: Repository<Event>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -105,9 +101,7 @@ export class UsersService {
     return userWithoutPassword as UserDto;
   }
 
-  async getUserMealVouchers(userId: string, month: number): Promise<number> {
-    dayjs.locale('fr');
-      
+  async getUserMealVouchers(userId: string, month: number): Promise<number> {     
     const startDate = dayjs().set('month', month - 1).startOf('month');
     const endDate = startDate.endOf('month');    
   
@@ -125,7 +119,7 @@ export class UsersService {
       }
       currentDay = currentDay.add(1, 'day');      
     }
-    const mealVoucherAmount = workDays.length * 8;  
+    const mealVoucherAmount = (workDays.length * 8);  
     return mealVoucherAmount;
   }
   
@@ -142,7 +136,7 @@ export class UsersService {
       const isDayOff = userWithEvents.events.some((event) =>
         day.isSame(event.date, 'day')
       );
-  
+      
       return isDayOff;
   }
   
